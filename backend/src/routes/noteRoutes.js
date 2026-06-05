@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import { getNotes, getNoteById, uploadNote, updateNote, deleteNote, toggleBookmark, createReview, getUserBookmarks } from '../controllers/noteController.js';
+import { protect } from '../middlewares/auth.js';
+import { validateRequest } from '../middlewares/validation.js';
+import { noteValidation, reviewValidation, idValidation } from '../validators/index.js';
+const router = Router();
+router.get('/', protect, getNotes);
+router.get('/user/bookmarks', protect, getUserBookmarks);
+router.get('/:id', protect, idValidation, validateRequest, getNoteById);
+router.post('/', protect, noteValidation, validateRequest, uploadNote);
+router.put('/:id', protect, idValidation, noteValidation, validateRequest, updateNote);
+router.delete('/:id', protect, idValidation, validateRequest, deleteNote);
+router.post('/:id/bookmark', protect, idValidation, validateRequest, toggleBookmark);
+router.post('/:id/reviews', protect, idValidation, reviewValidation, validateRequest, createReview);
+export default router;

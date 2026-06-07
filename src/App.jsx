@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, lazy, Suspense } from 'react';
 import { AppProvider, AppContext } from './context/AppContext';
 import Navbar from './components/Navbar';
 import SearchPalette from './components/SearchPalette';
+import { Analytics } from '@vercel/analytics/react';
 
 // Lazy load page components to improve initial page load performance
 const Landing = lazy(() => import('./pages/Landing'));
@@ -197,6 +198,9 @@ function AppContent() {
           </div>
         </div>
       </footer>
+      
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }

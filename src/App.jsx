@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, lazy, Suspense } from 'react';
+import { useState, useEffect, useContext, lazy, Suspense } from 'react';
 import { AppProvider, AppContext } from './context/AppContext';
 import Navbar from './components/Navbar';
 import SearchPalette from './components/SearchPalette';
@@ -56,7 +56,9 @@ function AppContent() {
   useEffect(() => {
     const authProtectedPages = ['notes', 'pyqs', 'dashboard', 'admin'];
     if (authProtectedPages.includes(activePage) && !currentUser && !loading) {
-      setActivePage('auth');
+      Promise.resolve().then(() => {
+        setActivePage('auth');
+      });
     }
   }, [activePage, currentUser, loading]);
 

@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Menu, X, BookOpen, GraduationCap, ShieldAlert, LogOut, User, LayoutDashboard, Bookmark, Search } from 'lucide-react';
+import { Menu, X, BookOpen, GraduationCap, ShieldAlert, LogOut, LayoutDashboard, Search } from 'lucide-react';
 
 export default function Navbar({ activePage, setActivePage, onSearchOpen }) {
   const { currentUser, handleLogout } = useContext(AppContext);

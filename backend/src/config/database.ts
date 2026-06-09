@@ -20,8 +20,8 @@ export const connectDatabase = async (): Promise<void> => {
   } catch (error) {
     global.isMockDatabase = true;
     console.warn('\n⚠️  [DATABASE WARNING]: Failed to connect to MongoDB server.');
-    console.warn('⚠️  [FALLBACK ENABLED]: Server is starting in MEMORY MOCK MODE.');
-    console.warn('⚠️  All database interactions will be simulated in memory and will reset on server restart.');
+    console.warn('⚠️  [FALLBACK ENABLED]: Server is starting in PERSISTENT JSON MOCK MODE (Lowdb).');
+    console.warn('⚠️  All database interactions will be written to and loaded from db.json.');
     console.warn('👉 To use a real database, ensure MongoDB is running locally on port 27017 or specify a MONGODB_URI in backend/.env\n');
   }
 };

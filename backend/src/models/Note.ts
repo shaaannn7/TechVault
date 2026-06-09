@@ -14,6 +14,11 @@ export interface INote extends Document {
   tags: string[];
   isPublished: boolean;
   isDraft: boolean;
+  semester: number;
+  syllabusCode: string;
+  campusBlock: string;
+  upvotes: number;
+  isVerifiedCreator: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +41,12 @@ const NoteSchema: Schema = new Schema(
     reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
     tags: [{ type: String, trim: true }],
     isPublished: { type: Boolean, default: false },
-    isDraft: { type: Boolean, default: false }
+    isDraft: { type: Boolean, default: false },
+    semester: { type: Number, default: 1 },
+    syllabusCode: { type: String, default: '' },
+    campusBlock: { type: String, default: '' },
+    upvotes: { type: Number, default: 0 },
+    isVerifiedCreator: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
@@ -45,5 +55,6 @@ const NoteSchema: Schema = new Schema(
 NoteSchema.index({ title: 'text', description: 'text' });
 NoteSchema.index({ subject: 1, isPublished: 1 });
 NoteSchema.index({ uploadedBy: 1 });
+NoteSchema.index({ semester: 1 });
 
 export default mongoose.models.Note || mongoose.model<INote>('Note', NoteSchema);

@@ -4,6 +4,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { protect } from '../middlewares/auth.js';
+import { validatePDFHeader } from '../middlewares/pdfValidator.js';
+
 const router = Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,7 +39,7 @@ const upload = multer({
     limits: { fileSize: 25 * 1024 * 1024 } // 25 MB limit
 });
 // Upload route
-router.post('/', protect, upload.single('file'), (req, res) => {
+router.post('/', protect, upload.single('file'), validatePDFHeader, (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'Please attach a PDF file to upload.' });
     }

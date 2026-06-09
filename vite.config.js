@@ -6,8 +6,14 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    host: true,
     proxy: {
       '/uploads': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false
+      },
+      '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false

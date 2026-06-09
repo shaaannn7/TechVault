@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { protect } from '../middlewares/auth.js';
+import { validatePDFHeader } from '../middlewares/pdfValidator.js';
 
 const router = Router();
 
@@ -43,7 +44,7 @@ const upload = multer({
 });
 
 // Upload route
-router.post('/', protect, upload.single('file'), (req: any, res: any) => {
+router.post('/', protect, upload.single('file'), validatePDFHeader, (req: any, res: any) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Please attach a PDF file to upload.' });
   }

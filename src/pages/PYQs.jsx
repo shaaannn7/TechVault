@@ -1,11 +1,11 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useMemo } from 'react';
 import { AppContext } from '../context/AppContext';
 import PDFViewer from '../components/PDFViewer';
-import { Download, GraduationCap, Search, Filter, PlusCircle, X, ShieldAlert, Sparkles, CornerDownRight, Star, Loader2, ChevronLeft, ChevronRight, Award, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { Download, GraduationCap, Search, PlusCircle, X, ShieldAlert, Sparkles, CornerDownRight, Loader2, ChevronLeft, ChevronRight, Award, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PYQs({ viewingPYQ, setViewingPYQ }) {
-  const { pyqs, currentUser, uploadFile, uploadPYQ, trackPYQDownload, deletePYQ, getAIAssistance } = useContext(AppContext);
+  const { pyqs, currentUser, uploadFile, uploadPYQ, trackPYQDownload, getAIAssistance } = useContext(AppContext);
 
   // States
   const [universityFilter, setUniversityFilter] = useState('RTU (Rajasthan Technical University)');
@@ -29,13 +29,15 @@ export default function PYQs({ viewingPYQ, setViewingPYQ }) {
   const [quizScore, setQuizScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
 
-  // Reset AI states when selected document changes
-  useEffect(() => {
+  // Adjust AI states during rendering when selected document changes
+  const [prevPyqId, setPrevPyqId] = useState(viewingPYQ?._id || null);
+  if (viewingPYQ?._id !== prevPyqId) {
+    setPrevPyqId(viewingPYQ?._id || null);
     setAiOpen(false);
     setAiData(null);
     setAiError('');
     setAiLoading(false);
-  }, [viewingPYQ]);
+  }
 
   const handleToggleAIAssistant = async () => {
     if (!currentUser) {
@@ -100,7 +102,7 @@ export default function PYQs({ viewingPYQ, setViewingPYQ }) {
   const subjects = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Civil Engineering', 'Electronics Engineering', 'Mechanical Engineering', 'Electrical Engineering'];
 
   // Filter papers using useMemo to avoid performance lag during typing
-  const filteredPYQs = React.useMemo(() => {
+  const filteredPYQs = useMemo(() => {
     const searchLower = search.toLowerCase().trim();
     return pyqs.filter(paper => {
       const matchesSearch = !searchLower ||

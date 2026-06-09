@@ -38,6 +38,17 @@ connectDatabase();
 // Initialize Express
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Save mock database changes on HTTP request completion
+app.use((req, res, next) => {
+    res.on('finish', () => {
+        if (global.isMockDatabase && typeof global.saveMockDb === 'function') {
+            global.saveMockDb();
+        }
+    });
+    next();
+});
+
 /**
  * --- Global Middlewares ---
  */
@@ -54,7 +65,21 @@ app.use(helmet({
 }));
 // CORS: Configures Cross-Origin Resource Sharing for the frontend application
 app.use(cors({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, etc.)
+        if (!origin) return callback(null, true);
+        
+        // In development, dynamically allow any origin to support local network sharing
+        if (process.env.NODE_ENV === 'development') {
+            return callback(null, true);
+        }
+        
+        if (origin === frontendUrl) {
+            return callback(null, true);
+        }
+        
+        callback(null, false);
+    },
     credentials: true
 }));
 // Compression: Gzip-compresses responses to save bandwidth and improve performance

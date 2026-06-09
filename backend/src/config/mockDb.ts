@@ -1,3 +1,9 @@
+import { LowSync } from 'lowdb';
+import { JSONFileSync } from 'lowdb/node';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bcryptjs from 'bcryptjs';
+
 export interface MockUser {
   _id: string;
   name: string;
@@ -19,7 +25,7 @@ export interface MockNote {
   subject: string;
   fileUrl: string;
   fileName: string;
-  uploadedBy: { _id: string; name: string; email: string };
+  uploadedBy: { _id: string; name: string; email: string; branch?: string; semester?: number };
   fileSize: number;
   downloads: number;
   rating: number;
@@ -29,6 +35,11 @@ export interface MockNote {
   isDraft: boolean;
   createdAt: string;
   updatedAt: string;
+  semester?: number;
+  syllabusCode?: string;
+  campusBlock?: string;
+  upvotes?: number;
+  isVerifiedCreator?: boolean;
 }
 
 export interface MockReview {
@@ -49,10 +60,15 @@ export interface MockPYQ {
   fileName: string;
   university: string;
   difficultyLevel: 'Easy' | 'Medium' | 'Hard';
-  uploadedBy: { _id: string; name: string; email: string };
+  uploadedBy: { _id: string; name: string; email: string; branch?: string; semester?: number };
   downloads: number;
   isFree: boolean;
   createdAt: string;
+  semester?: number;
+  syllabusCode?: string;
+  campusBlock?: string;
+  upvotes?: number;
+  isVerifiedCreator?: boolean;
 }
 
 export const mockUsers: MockUser[] = [
@@ -185,3 +201,62 @@ export const mockPyqs: MockPYQ[] = [
     createdAt: '2026-05-22T14:30:00Z'
   }
 ];
+
+// Initialize Lowdb persistent JSON database
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dbPath = path.join(__dirname, '../../../db.json');
+
+const adapter = new JSONFileSync<any>(dbPath);
+const db = new LowSync<any>(adapter, null);
+
+try {
+  db.read();
+  
+  if (!db.data || !db.data.users || db.data.users.length === 0) {
+    // Hash passwords of default memory mock users
+    for (const u of mockUsers) {
+      if (u.password && !u.password.startsWith('$2a$') && !u.password.startsWith('$2b$') && !u.password.startsWith('$2y$')) {
+        u.password = bcryptjs.hashSync(u.password, 10);
+      }
+    }
+    // First run or empty db: write current memory mock state to disk
+    db.data = { users: [...mockUsers], notes: [...mockNotes], pyqs: [...mockPyqs] };
+    db.write();
+  } else {
+    // Database exists on disk: clear memory arrays and load from disk
+    mockUsers.length = 0;
+    mockUsers.push(...db.data.users);
+    
+    // Hash unhashed passwords loaded from disk for backwards compatibility
+    let modified = false;
+    for (const u of mockUsers) {
+      if (u.password && !u.password.startsWith('$2a$') && !u.password.startsWith('$2b$') && !u.password.startsWith('$2y$')) {
+        u.password = bcryptjs.hashSync(u.password, 10);
+        modified = true;
+      }
+    }
+    if (modified) {
+      db.write();
+    }
+    
+    mockNotes.length = 0;
+    mockNotes.push(...db.data.notes);
+    
+    mockPyqs.length = 0;
+    mockPyqs.push(...db.data.pyqs);
+  }
+  
+  // Re-align references
+  db.data = { users: mockUsers, notes: mockNotes, pyqs: mockPyqs };
+} catch (err) {
+  console.error('Failed to load mock JSON database. Using memory fallback:', err);
+}
+
+(global as any).saveMockDb = () => {
+  try {
+    db.write();
+  } catch (err) {
+    console.error('Failed to write mock database changes to disk:', err);
+  }
+};

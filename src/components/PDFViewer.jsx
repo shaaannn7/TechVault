@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Download, FileText, Printer, RotateCw, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Download, FileText, RotateCw } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 
 export default function PDFViewer({ title, subject, author, fileUrl, onDownload }) {
   const [page, setPage] = useState(1);
   const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
+
+  const isIframe = !!(fileUrl && (fileUrl.startsWith('/uploads') || fileUrl.includes('/uploads/')));
 
   const handleZoom = (type) => {
     if (type === 'in') setZoom(z => Math.min(z + 10, 150));
@@ -140,60 +143,74 @@ export default function PDFViewer({ title, subject, author, fileUrl, onDownload 
         </div>
 
         {/* Page Nav Controls */}
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:hover:bg-slate-800 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-xs font-bold text-slate-300">
-            Page {page} of 3
-          </span>
-          <button
-            onClick={() => setPage(p => Math.min(3, p + 1))}
-            disabled={page === 3}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:hover:bg-slate-800 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+        {!isIframe && (
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:hover:bg-slate-800 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-xs font-bold text-slate-300">
+              Page {page} of 3
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(3, p + 1))}
+              disabled={page === 3}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:hover:bg-slate-800 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Zoom & Action Controls */}
-        <div className="flex items-center gap-2">
-          {/* Zoom Out */}
-          <button
-            onClick={() => handleZoom('out')}
-            disabled={zoom <= 70}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 transition-colors"
-            title="Zoom Out"
-          >
-            <ZoomOut className="w-4 h-4" />
-          </button>
-          <span className="text-[11px] font-bold text-slate-400 w-10 text-center">
-            {zoom}%
-          </span>
-          {/* Zoom In */}
-          <button
-            onClick={() => handleZoom('in')}
-            disabled={zoom >= 150}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 transition-colors"
-            title="Zoom In"
-          >
-            <ZoomIn className="w-4 h-4" />
-          </button>
+        <div className="flex items-center gap-2 relative">
+          <div className={`relative group flex items-center gap-2 ${isIframe ? 'cursor-not-allowed' : ''}`}>
+            {/* Zoom Out */}
+            <button
+              onClick={() => handleZoom('out')}
+              disabled={isIframe || zoom <= 70}
+              className={`p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 transition-colors ${isIframe ? 'pointer-events-none' : ''}`}
+              title={isIframe ? undefined : "Zoom Out"}
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <span className={`text-[11px] font-bold text-slate-400 w-10 text-center transition-opacity ${isIframe ? 'opacity-30 pointer-events-none' : ''}`}>
+              {zoom}%
+            </span>
+            {/* Zoom In */}
+            <button
+              onClick={() => handleZoom('in')}
+              disabled={isIframe || zoom >= 150}
+              className={`p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 transition-colors ${isIframe ? 'pointer-events-none' : ''}`}
+              title={isIframe ? undefined : "Zoom In"}
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
 
-          <div className="h-6 w-[1px] bg-white/5 mx-1"></div>
+            <div className={`h-6 w-[1px] bg-white/5 mx-1 ${isIframe ? 'pointer-events-none' : ''}`}></div>
 
-          {/* Rotate */}
-          <button
-            onClick={handleRotate}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-            title="Rotate Page"
-          >
-            <RotateCw className="w-4 h-4" />
-          </button>
+            {/* Rotate */}
+            <button
+              onClick={handleRotate}
+              disabled={isIframe}
+              className={`p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 transition-colors ${isIframe ? 'pointer-events-none' : ''}`}
+              title={isIframe ? undefined : "Rotate Page"}
+            >
+              <RotateCw className="w-4 h-4" />
+            </button>
+
+            {isIframe && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-slate-950 text-slate-200 text-[10px] sm:text-xs py-1.5 px-3 rounded-lg border border-white/10 shadow-xl w-48 text-center sm:w-auto sm:whitespace-nowrap">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 border-t border-l border-white/10 rotate-45"></div>
+                Zoom and rotation available in enhanced viewer mode.
+              </div>
+            )}
+          </div>
+
+          <div className="h-6 w-[1px] bg-white/5 mx-1 hidden sm:block"></div>
 
           {/* Download */}
           <button
@@ -209,12 +226,19 @@ export default function PDFViewer({ title, subject, author, fileUrl, onDownload 
 
       {/* PDF Pages Container */}
       <div className="flex justify-center bg-slate-950 p-4 md:p-6 min-h-[600px] h-[650px] w-full">
-        {fileUrl && (fileUrl.startsWith('/uploads') || fileUrl.includes('/uploads/')) ? (
+        {isIframe ? (
           <iframe
             src={
               fileUrl.startsWith('http')
-                ? `${fileUrl.replace('http://localhost:5000', '')}#toolbar=0&navpanes=0`
-                : `${fileUrl}#toolbar=0&navpanes=0`
+                ? (() => {
+                    try {
+                      const parsedUrl = new URL(fileUrl);
+                      return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}#toolbar=0&navpanes=0`;
+                    } catch {
+                      return `${fileUrl}#toolbar=0&navpanes=0`;
+                    }
+                  })()
+                : `${API_BASE_URL}${fileUrl.startsWith('/') ? '' : '/'}${fileUrl}#toolbar=0&navpanes=0`
             }
             title={title}
             className="w-full h-full rounded-lg bg-white border border-white/5 shadow-2xl"

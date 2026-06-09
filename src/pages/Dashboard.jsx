@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { LayoutDashboard, Bookmark, CloudUpload, Settings, Trash2, ExternalLink, Calendar, Mail, Shield, Check, X, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
+import API_BASE_URL from '../config/api';
 
 export default function Dashboard({ setActivePage, setViewingDoc }) {
-  const { currentUser, notes, pyqs, toggleBookmark, deleteNote, updateProfile } = useContext(AppContext);
+  const { currentUser, notes, toggleBookmark, deleteNote, updateProfile } = useContext(AppContext);
   const [activeTab, setActiveTab] = useState('overview');
 
   // Filter notes/pyqs uploaded by current user
@@ -465,7 +466,7 @@ export default function Dashboard({ setActivePage, setViewingDoc }) {
                 </div>
               </div>
               <a 
-                href="/uploads/rtu_1st_year_syllabus.pdf"
+                href={`${API_BASE_URL}/uploads/rtu_1st_year_syllabus.pdf`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-blue-500 hover:from-violet-500 hover:to-blue-400 text-white text-xs font-bold rounded-xl shadow-lg transition-all flex items-center gap-1.5 shrink-0"

@@ -1,4 +1,6 @@
-import React, { createContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useState, useEffect } from 'react';
+import API_BASE_URL from '../config/api';
 
 /**
  * AppContext
@@ -9,7 +11,7 @@ import React, { createContext, useState, useEffect } from 'react';
 export const AppContext = createContext();
 
 // Backend API Base URL
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = `${API_BASE_URL}/api`;
 
 export const AppProvider = ({ children }) => {
   // --- Global State ---
@@ -182,8 +184,8 @@ export const AppProvider = ({ children }) => {
       await Promise.all([fetchNotes(userObj), fetchPYQs()]);
       setLoading(false);
     };
-
     initSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -191,20 +193,25 @@ export const AppProvider = ({ children }) => {
    */
   useEffect(() => {
     if (currentUser) {
-      if (currentUser.role === 'admin') {
-        fetchUsers();
-      }
-      if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
-        fetchAdminStats();
-      }
-      fetchNotes(currentUser);
-      fetchPYQs();
+      Promise.resolve().then(() => {
+        if (currentUser.role === 'admin') {
+          fetchUsers();
+        }
+        if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
+          fetchAdminStats();
+        }
+        fetchNotes(currentUser);
+        fetchPYQs();
+      });
     } else {
       // Clear sensitive data on logout
-      fetchNotes(null);
-      setPyqs([]);
-      setAdminStats(null);
+      Promise.resolve().then(() => {
+        fetchNotes(null);
+        setPyqs([]);
+        setAdminStats(null);
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   // --- Auth Operations ---
@@ -297,8 +304,17 @@ export const AppProvider = ({ children }) => {
   /**
    * Global Spotlight Search implementation.
    */
-  const performSearch = async (query) => {
-    const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`, {
+  const performSearch = async (query, filters = {}) => {
+    const queryParams = new URLSearchParams();
+    if (query !== undefined && query !== null && query !== '') {
+      queryParams.append('q', query);
+    }
+    Object.entries(filters).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== '' && val !== 'All') {
+        queryParams.append(key, val.toString());
+      }
+    });
+    const res = await fetch(`${API_BASE}/search?${queryParams.toString()}`, {
       headers: getHeaders()
     });
     const json = await res.json();

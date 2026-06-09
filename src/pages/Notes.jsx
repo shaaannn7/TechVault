@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useMemo } from 'react';
 import { AppContext } from '../context/AppContext';
 import PDFViewer from '../components/PDFViewer';
 import { Search, Filter, BookOpen, Star, Download, Bookmark, PlusCircle, X, MessageSquare, CornerDownRight, ShieldAlert, Sparkles, Loader2, ChevronLeft, ChevronRight, Award, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
@@ -29,13 +29,59 @@ export default function Notes({ viewingDoc, setViewingDoc }) {
   const [quizScore, setQuizScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
 
-  // Reset AI states when selected document changes
-  useEffect(() => {
+  // Upload modal state
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newSubject, setNewSubject] = useState('Computer Science');
+  const [newTags, setNewTags] = useState('');
+  const [newFileName, setNewFileName] = useState('');
+  const [newFile, setNewFile] = useState(null);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState('');
+
+  // JECRC / RTU Specific state variables
+  const [selectedSemester, setSelectedSemester] = useState(() => {
+    const initialSem = localStorage.getItem('tv_initial_sem');
+    if (initialSem) {
+      localStorage.removeItem('tv_initial_sem');
+      return initialSem;
+    }
+    return 'All';
+  });
+
+  const [newSemester, setNewSemester] = useState(1);
+  const [newSyllabusCode, setNewSyllabusCode] = useState('');
+  const [newCampusBlock, setNewCampusBlock] = useState('A-Block (CSE/IT Department)');
+
+  // Review state
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+
+  // Adjust AI states during rendering when selected document changes
+  const [prevDocId, setPrevDocId] = useState(viewingDoc?._id || null);
+  if (viewingDoc?._id !== prevDocId) {
+    setPrevDocId(viewingDoc?._id || null);
     setAiOpen(false);
     setAiData(null);
     setAiError('');
     setAiLoading(false);
-  }, [viewingDoc]);
+  }
+
+  // Open upload modal on redirect from resource discovery empty states
+  useEffect(() => {
+    const openUpload = localStorage.getItem('tv_open_upload');
+    if (openUpload === 'true') {
+      localStorage.removeItem('tv_open_upload');
+      if (currentUser) {
+        Promise.resolve().then(() => {
+          setUploadOpen(true);
+        });
+      } else {
+        alert('Please sign in to upload materials.');
+      }
+    }
+  }, [currentUser]);
 
   const handleToggleAIAssistant = async () => {
     if (!currentUser) {
@@ -72,45 +118,18 @@ export default function Notes({ viewingDoc, setViewingDoc }) {
     }
   };
   
-  // Upload modal state
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDesc, setNewDesc] = useState('');
-  const [newSubject, setNewSubject] = useState('Computer Science');
-  const [newTags, setNewTags] = useState('');
-  const [newFileName, setNewFileName] = useState('');
-  const [newFile, setNewFile] = useState(null);
-  const [uploadError, setUploadError] = useState('');
-  const [uploadSuccess, setUploadSuccess] = useState('');
 
-  // JECRC / RTU Specific state variables
-  const [selectedSemester, setSelectedSemester] = useState(() => {
-    const initialSem = localStorage.getItem('tv_initial_sem');
-    if (initialSem) {
-      localStorage.removeItem('tv_initial_sem');
-      return initialSem;
-    }
-    return 'All';
-  });
-
-  const [newSemester, setNewSemester] = useState(1);
-  const [newSyllabusCode, setNewSyllabusCode] = useState('');
-  const [newCampusBlock, setNewCampusBlock] = useState('A-Block (CSE/IT Department)');
-
-  // Review state
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
 
   // Dropdown list
   const subjects = ['All', 'Computer Science', 'Mathematics', 'Physics', 'Chemistry', 'Civil Engineering', 'Electronics Engineering', 'Mechanical Engineering', 'Electrical Engineering'];
 
   // Filter notes that are published
-  const publishedNotes = React.useMemo(() => {
+  const publishedNotes = useMemo(() => {
     return notes.filter(n => n.isPublished);
   }, [notes]);
 
   // Apply search & filter using useMemo to avoid performance lag during typing
-  const filteredNotes = React.useMemo(() => {
+  const filteredNotes = useMemo(() => {
     const searchLower = search.toLowerCase().trim();
     if (!searchLower && selectedSubject === 'All' && selectedSemester === 'All') return publishedNotes;
 

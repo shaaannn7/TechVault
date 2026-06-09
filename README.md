@@ -289,6 +289,17 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 ```
 
+### Frontend Configuration
+
+Create a `.env` file in the root directory (frontend) with:
+
+```env
+# URL for the backend API
+VITE_API_URL=http://localhost:5000
+```
+
+> **Production Note:** When deploying the frontend (e.g., to Vercel), ensure you set the `VITE_API_URL` environment variable to your production backend URL (e.g., `https://techvault-api.onrender.com`).
+
 ---
 
 ## 🔄 User Workflows

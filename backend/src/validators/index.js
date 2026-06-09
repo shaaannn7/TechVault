@@ -88,9 +88,8 @@ export const reviewValidation = [
 ];
 export const searchValidation = [
     query('q')
+        .optional()
         .trim()
-        .notEmpty()
-        .withMessage('Search query parameter q is required')
 ];
 export const idValidation = [
     param('id')

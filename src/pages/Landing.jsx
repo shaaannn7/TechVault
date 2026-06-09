@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, GraduationCap, Users, Shield, ArrowRight, BookMarked, Sparkles } from 'lucide-react';
+import { BookOpen, GraduationCap, Users, Shield, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Landing({ setActivePage }) {
   const containerVariants = {

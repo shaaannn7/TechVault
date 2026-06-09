@@ -1,6 +1,6 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Shield, Users, CheckSquare, BarChart3, Check, X, ShieldCheck, UserMinus, UserCheck, RefreshCw, FileText } from 'lucide-react';
+import { Shield, Users, CheckSquare, BarChart3, Check, X, ShieldCheck, UserMinus, UserCheck, FileText } from 'lucide-react';
 
 export default function Admin({ setActivePage, setViewingDoc }) {
   const { currentUser, users, notes, pyqs, approveNote, rejectNote, updateUserRole, toggleUserStatus, adminStats } = useContext(AppContext);

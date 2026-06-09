@@ -41,7 +41,4 @@ const UserSchema = new Schema({
     campusBlock: { type: String, default: '' }
 }, { timestamps: true });
 
-// Indexes: Allows fast lookup when logging in by email
-UserSchema.index({ email: 1 });
-
 export default mongoose.models.User || mongoose.model('User', UserSchema);
